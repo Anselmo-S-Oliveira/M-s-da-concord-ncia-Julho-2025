@@ -1,0 +1,1 @@
+# M-s-da-concord-ncia-Julho-2025
