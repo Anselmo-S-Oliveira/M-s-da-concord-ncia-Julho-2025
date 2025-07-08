@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mês da Concordância</title>
+    <style>
+        /* style.css content */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: #000;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1200px; /* Adjust as needed */
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .week {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .week h2 {
+            text-align: center;
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .day-entry {
+            display: flex;
+            flex-direction: column; /* Changed to column for stacking */
+            align-items: flex-start; /* Align items to the start */
+            margin-bottom: 10px;
+        }
+
+        .day-info { /* New div to group circle and date/day */
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px; /* Space between date and link */
+        }
+
+        .day-info p { /* Style for the day/date text */
+            transition: color 0.3s, font-weight 0.3s;
+        }
+
+        .day-info p.clicked-day { /* New style for clicked day/date */
+            color: #4CAF50; /* Green */
+            font-weight: bold;
+        }
+
+        .circle {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white; /* Color of the "check" mark */
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .circle.checked {
+            background-color: #4CAF50; /* Green */
+            border-color: #4CAF50; /* Green */
+        }
+
+        .bible-link {
+            color: blue; /* Changed to blue */
+            text-decoration: none;
+            font-weight: bold;
+            /* No flex-grow here as it's now on its own line */
+            text-align: left;
+            transition: color 0.3s;
+            margin-left: 35px; /* Aligns with the text above, accounting for circle width + margin */
+        }
+
+        .bible-link:hover {
+            text-decoration: underline;
+        }
+
+        .bible-link.clicked {
+            color: #4CAF50; /* Green */
+        }
+
+        .info-section {
+            text-align: center;
+            margin-top: 40px;
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .info-section .large-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .info-section .quote {
+            font-style: italic;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #modal-passage-title {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: black;
+        }
+
+        #modal-passage-text {
+            text-align: justify;
+            color: black;
+            line-height: 1.6;
+            max-height: 400px; /* Limits height for scrolling if text is too long */
+            overflow-y: auto; /* Adds vertical scrollbar */
+            padding-right: 10px; /* Spacing to not cut the scrollbar */
+            white-space: pre-wrap; /* Ensures newlines are respected */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MÊS DA CONCORDÂNCIA</h1>
+        <p>Separe um tempo para ler, meditar e orar em concordância com outro servo.</p>
+    </header>
+
+    <main>
+        <div class="calendar-container">
+            <!-- 1ª Semana -->
+            <div class="week">
+                <h2>1.ª SEMANA</h2>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="06/07"></div>
+                        <p>DOMINGO 06/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Mateus 18:18-20">MATEUS 18:18-20</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="07/07"></div>
+                        <p>SEGUNDA 07/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Rute 1:15-19">RUTE 1:15-19</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="08/07"></div>
+                        <p>TERÇA 08/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 2:1-4">ATOS 2:1-4</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="09/07"></div>
+                        <p>QUARTA 09/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Êxodo 17:10-13">ÊXODO 17:10-13</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="10/07"></div>
+                        <p>QUINTA 10/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 4:29-31">ATOS 4:29-31</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="11/07"></div>
+                        <p>SEXTA 11/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Eclesiastes 4:9-12">ECLESIASTES 4:9-12</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="12/07"></div>
+                        <p>SÁBADO 12/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Filipenses 1:3-6">FILIPENSES 1:3-6</a>
+                </div>
+            </div>
+
+            <!-- 2ª Semana -->
+            <div class="week">
+                <h2>2.ª SEMANA</h2>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="13/07"></div>
+                        <p>DOMINGO 13/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Josué 14:6-13">JOSUÉ 14:6-13</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="14/07"></div>
+                        <p>SEGUNDA 14/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Tiago 5:14-16">TIAGO 5:14-16</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="15/07"></div>
+                        <p>TERÇA 15/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="2 Reis 2:6-14">2 REIS 2:6-14</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="16/07"></div>
+                        <p>QUARTA 16/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Marcos 2:3-5">MARCOS 2:3-5</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="17/07"></div>
+                        <p>QUINTA 17/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 16:25-28">ATOS 16:25-28</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="18/07"></div>
+                        <p>SEXTA 18/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 3:1-8">ATOS 3:1-8</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="19/07"></div>
+                        <p>SÁBADO 19/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Daniel 2:17-19">DANIEL 2:17-19</a>
+                </div>
+            </div>
+
+            <!-- 3ª Semana -->
+            <div class="week">
+                <h2>3.ª SEMANA</h2>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="20/07"></div>
+                        <p>DOMINGO 20/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Marcos 6:7-13">MARCOS 6:7-13</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="21/07"></div>
+                        <p>SEGUNDA 21/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Neemias 1:3-6">NEEMIAS 1:3-6</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="22/07"></div>
+                        <p>TERÇA 22/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 6:2-7">ATOS 6:2-7</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="23/07"></div>
+                        <p>QUARTA 23/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="1 Samuel 14:6-10">1 SAMUEL 14:6-10</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="24/07"></div>
+                        <p>QUINTA 24/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Hebreus 10:23-25">HEBREUS 10:23-25</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="25/07"></div>
+                        <p>SEXTA 25/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="2 Timóteo 1:3-7">2 TIMÓTEO 1:3-7</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="26/07"></div>
+                        <p>SÁBADO 26/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="1 Coríntios 3:6-9">1 CORÍNTIOS 3:6-9</a>
+                </div>
+            </div>
+
+            <!-- 4ª Semana -->
+            <div class="week">
+                <h2>4.ª SEMANA</h2>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="27/07"></div>
+                        <p>DOMINGO 27/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="2 Crônicas 5:11-14">2 CRÔNICAS 5:11-14</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="28/07"></div>
+                        <p>SEGUNDA 28/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Esdras 8:21-23">ESDRAS 8:21-23</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="29/07"></div>
+                        <p>TERÇA 29/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Êxodo 4:10-18">ÊXODO 4:10-18</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="30/07"></div>
+                        <p>QUARTA 30/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Atos 20:36-38">ATOS 20:36-38</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="31/07"></div>
+                        <p>QUINTA 31/07</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="Romanos 15:5-7">ROMANOS 15:5-7</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="01/08"></div>
+                        <p>SEXTA 01/08</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="1 Coríntios 1:9-13">1 CORÍNTIOS 1:9-13</a>
+                </div>
+                <div class="day-entry">
+                    <div class="day-info">
+                        <div class="circle" data-day="02/08"></div>
+                        <p>SÁBADO 02/08</p>
+                    </div>
+                    <a href="#" class="bible-link" data-passage="João 17:20-23">JOÃO 17:20-23</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <p class="large-text">TRAGA ESTA FOLHA NO DIA 2 DE AGOSTO | 18H</p>
+            <p>Direto do Templo de Salomão, com transmissão para todo o Brasil.</p>
+            <p class="quote">Também vos digo que, se dois de vós concordarem na terra acerca de qualquer coisa que pedirem, isso lhes será feito por Meu Pai, que está nos céus. (Mateus 18:19)</p>
+        </div>
+    </main>
+
+    <div id="bible-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-passage-title"></h3>
+            <p id="modal-passage-text"></p>
+        </div>
+    </div>
+
+    <script>
+        // script.js content
+        document.addEventListener('DOMContentLoaded', () => {
+            const bibleLinks = document.querySelectorAll('.bible-link');
+            const circles = document.querySelectorAll('.circle');
+            const modal = document.getElementById('bible-modal');
+            const closeModalButton = document.querySelector('.close-button');
+            const modalPassageTitle = document.getElementById('modal-passage-title');
+            const modalPassageText = document.getElementById('modal-passage-text');
+
+            // Functions for the Bible modal
+            function openModal(passage, text) {
+                modalPassageTitle.textContent = passage;
+                modalPassageText.textContent = text;
+                modal.style.display = 'block';
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+            }
+
+            closeModalButton.addEventListener('click', closeModal);
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Function to fetch Bible text (replace with your API or local data)
+            async function getBiblePassage(passage) {
+                // This is a simulation. In a real environment, you would make a call to a Fiel Bible API.
+                // Example API (you would need to verify if it supports the Fiel version):
+                // const response = await fetch(`https://bible-api.com/${passage}?translation=acf`); // ACF (Almeida Corrigida e Fiel) or another
+                // if (!response.ok) {
+                //     throw new Error('Could not load the passage.');
+                // }
+                // const data = await response.json();
+                // return data.text;
+
+                // Placeholder for demonstration with actual verses for some passages
+                const bibleVerses = {
+                    "Mateus 18:18-20": `18. Em verdade vos digo que tudo o que ligardes na terra será ligado no céu, e tudo o que desligardes na terra será desligado no céu.
+19. Também vos digo que, se dois de vós concordarem na terra acerca de qualquer coisa que pedirem, isso lhes será feito por meu Pai, que está nos céus.
+20. Porque onde estiverem dois ou três reunidos em meu nome, aí estou eu no meio deles.`,
+                    "Rute 1:15-19": `15. Então disse Noemi: Eis que voltou tua cunhada ao seu povo e aos seus deuses; volta tu também após tua cunhada.
+16. Disse, porém, Rute: Não me instes para que te deixe, e me afaste de ti; porque aonde quer que tu fores, irei eu, e onde quer que pousares, ali pousarei eu; o teu povo é o meu povo, o teu Deus é o meu Deus;
+17. Onde quer que morreres, morrerei eu, e ali serei sepultada. Assim me faça o SENHOR, e outro tanto, se outra coisa que não a morte me separar de ti.
+18. Vendo, pois, Noemi que de todo estava resolvida a ir com ela, deixou de lhe falar.
+19. Assim, pois, foram-se ambas, até que chegaram a Belém; e sucedeu que, chegando elas a Belém, toda a cidade se comoveu por causa delas, e diziam: Não é esta Noemi?`,
+                    "Atos 2:1-4": `1. E, cumprindo-se o dia de Pentecostes, estavam todos concordemente no mesmo lugar;
+2. E de repente veio do céu um som, como de um vento veemente e impetuoso, e encheu toda a casa em que estavam assentados.
+3. E foram vistas por eles línguas repartidas, como que de fogo, as quais pousaram sobre cada um deles.
+4. E todos foram cheios do Espírito Santo, e começaram a falar noutras línguas, conforme o Espírito Santo lhes concedia que falassem.`,
+                    "Êxodo 17:10-13": `10. Fez, pois, Josué como Moisés lhe dissera, pelejando contra Amaleque; e Moisés, Arão e Hur subiram ao cume do outeiro.
+11. E acontecia que, quando Moisés levantava a sua mão, Israel prevalecia; mas quando ele abaixava a sua mão, Amaleque prevalecia.
+12. Porém as mãos de Moisés eram pesadas, por isso tomaram uma pedra, e a puseram debaixo dele, para assentar-se nela; e Arão e Hur sustentaram as suas mãos, um de um lado e o outro do outro; assim ficaram as suas mãos firmes até que o sol se pôs.
+13. E assim Josué desfez a Amaleque e a seu povo ao fio da espada.`,
+                    // Add more passages here following the same structure
+                    "default": `Versículos para ${passage} na versão Fiel:\n\n(Para ter os versículos corretos para todas as passagens, seria necessário integrar uma API da Bíblia ou ter um banco de dados local com os textos completos.)`
+                };
+
+                return bibleVerses[passage] || bibleVerses["default"];
+            }
+
+            // Logic for Bible hyperlinks
+            bibleLinks.forEach(link => {
+                link.addEventListener('click', async (event) => {
+                    event.preventDefault(); // Prevents default link behavior
+                    const passage = link.dataset.passage;
+
+                    try {
+                        const text = await getBiblePassage(passage);
+                        openModal(passage, text);
+                        link.classList.add('clicked'); // Changes link color to green
+
+                        // Find the corresponding day/date paragraph and add the clicked-day class
+                        const dayEntry = link.closest('.day-entry');
+                        const dayInfoParagraph = dayEntry.querySelector('.day-info p');
+                        if (dayInfoParagraph) {
+                            dayInfoParagraph.classList.add('clicked-day');
+                        }
+
+                    } catch (error) {
+                        console.error("Error loading Bible passage:", error);
+                        alert("Não foi possível carregar a passagem no momento. Tente novamente mais tarde.");
+                    }
+                });
+            });
+
+            // Logic for "check" circles
+            circles.forEach(circle => {
+                circle.addEventListener('click', () => {
+                    circle.classList.toggle('checked');
+                    if (circle.classList.contains('checked')) {
+                        circle.textContent = '✓'; // Adds the check mark
+                    } else {
+                        circle.textContent = ''; // Removes the check mark
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
